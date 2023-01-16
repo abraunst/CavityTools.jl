@@ -90,3 +90,7 @@ end
 
 
 Base.isempty(a::Accumulator) = isempty(diff(a))
+function Base.empty!(a::Accumulator)
+    resize!(a.sums, 1)
+    resize!(a.sums[1], 0)
+end
