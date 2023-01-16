@@ -13,12 +13,14 @@ Accumulator() = Accumulator(Float64)
 Accumulator(::Type{T}) where T = Accumulator(T[])
 Accumulator{T}() where {T}  = Accumulator(T)
 
-Base.length(a::Accumulator) = length(a.sums[1])
+Base.length(a::Accumulator) = length(diff(a))
 
-Base.lastindex(a::Accumulator) = lastindex(a.sums[1])
+Base.lastindex(a::Accumulator) = lastindex(diff(a))
+
+Base.diff(a::Accumulator) = a.sums[1]
 
 function Base.push!(a::Accumulator{T}, v) where T
-    x = length(a.sums[1])
+    x = length(a)
     for s in a.sums
         length(s) == x && push!(s,zero(T))
         s[x + 1] += v
@@ -40,15 +42,6 @@ function Base.pop!(a::Accumulator{T}) where T
 
 end
 
-function Base.deleteat!(a::Accumulator, i::Integer)
-    v = a[end]
-    pop!(a)
-    if i ≤ length(a)
-        a[i] = v
-    end
-    a
-end
-
 function Base.setindex!(a::Accumulator{T},v,i::Integer) where T
     x = i - 1
     r = promote_type(typeof(v), T)(v)
@@ -62,7 +55,7 @@ function Base.setindex!(a::Accumulator{T},v,i::Integer) where T
     end
 end
 
-Base.:(==)(a::Accumulator, b::Accumulator) = (a.sums[1] == b.sums[1])
+Base.:(==)(a::Accumulator, b::Accumulator) = (diff(a) == diff(b))
 
 function Base.getindex(a::Accumulator{T},i) where T
     m = zero(T)
@@ -95,3 +88,5 @@ function Base.searchsortedfirst(a::Accumulator{T}, r) where T
     return (x >>= 1) + 1
 end
 
+
+Base.isempty(a::Accumulator) = isempty(diff(a))
