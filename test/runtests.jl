@@ -34,4 +34,16 @@ end
     end
 end
 
+@testset "nonnumerical" begin
+    v = string.('a':'z')
+    a = Accumulator(v,*,T->"")
+    for i in eachindex(v)
+        @test a[i] == prod(v[1:i])
+    end
+    @test a[end] == prod(v) == sum(a)
+    a[2] = "X"
+    @test a[5] == "aXcde"
+end
+
+
 nothing
