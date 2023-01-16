@@ -17,6 +17,11 @@ function Base.setindex!(e::ExponentialQueue, p, i)
     p
 end
 
+Base.in(i, e::ExponentialQueue) = !iszero(e.idx[i])
+
+Base.getindex(e::ExponentialQueue, i) = diff(e.acc)[e.idx[i]]
+
+
 function Base.deleteat!(e::ExponentialQueue, i)
     l, k = e.idx[i], e.ridx[length(e.acc)]
     e.acc[l] = e.acc.sums[1][end]
@@ -36,3 +41,9 @@ function Base.pop!(e::ExponentialQueue)
 end
 
 Base.isempty(e::ExponentialQueue) = isempty(e.acc)
+
+function Base.empty!(e::ExponentialQueue)
+    e.idx .= 0
+    empty!(e.ridx)
+    empty!(e.acc)
+end
