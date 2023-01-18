@@ -1,3 +1,17 @@
+"""
+Accumulator(v) objects acts as a live cumsum(v) that gets updated when the vector does.
+julia> a = Accumulator([1:10;])
+Accumulator{Int64, +, zero}([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [3, 7, 11, 15, 19], [10, 26, 19], [36, 19], [55]])
+
+julia> a[end]
+55
+
+julia> a[1]=0
+0
+
+julia> a[end]
+54
+"""
 struct Accumulator{T,op,init}
     sums::Vector{Vector{T}}
     function Accumulator(vals::Vector{T}, op=+, init=zero) where T
