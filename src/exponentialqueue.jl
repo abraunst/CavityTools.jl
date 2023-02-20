@@ -33,7 +33,7 @@ function Base.setindex!(e::ExponentialQueue, p, i)
     p
 end
 
-Base.in(i, e::ExponentialQueue) = !iszero(e.idx[i])
+Base.haskey(e::ExponentialQueue, i) = !iszero(e.idx[i])
 
 Base.getindex(e::ExponentialQueue, i) = diff(e.acc)[e.idx[i]]
 
