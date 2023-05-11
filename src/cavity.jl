@@ -5,7 +5,7 @@ function cavity!(dest, source, op, init)
         @inbounds dest[begin] = init 
         return op(first(source), init)
     end
-    Iterators.accumulate!(op, dest, source)
+    accumulate!(op, dest, source)
     full = op(dest[end], init)
     right = init
     for (i,s)=zip(lastindex(dest):-1:firstindex(dest)+1,Iterators.reverse(source))
