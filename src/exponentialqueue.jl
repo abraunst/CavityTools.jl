@@ -23,19 +23,26 @@ end
 ExponentialQueue(N::Integer) = ExponentialQueue(Accumulator(), fill(0,N), Int[])
 
 function Base.setindex!(e::ExponentialQueue, p, i)
-    if e.idx[i] == 0
+    if p <= 0
+        # do not store null rates
+        haskey(e, i) && deleteat!(e, i)
+        return p
+    end
+
+    if haskey(e, i)
+        e.acc[e.idx[i]] = p
+    else
+        e.idx[i] == 0
         push!(e.acc, p)
         e.idx[i] = length(e.acc)
         push!(e.ridx, i)
-    else
-        e.acc[e.idx[i]] = p
     end
     p
 end
 
 Base.haskey(e::ExponentialQueue, i) = !iszero(e.idx[i])
 
-Base.getindex(e::ExponentialQueue, i) = diff(e.acc)[e.idx[i]]
+Base.getindex(e::ExponentialQueue, i) = haskey(e, i) ? diff(e.acc)[e.idx[i]] : 0.0
 
 
 function Base.deleteat!(e::ExponentialQueue, i)
@@ -53,7 +60,7 @@ function Base.pop!(e::ExponentialQueue)
     j = searchsortedfirst(e.acc, rand() * sum(e.acc))
     i = e.ridx[j]
     deleteat!(e, i)
-    i,t
+    i, t
 end
 
 Base.isempty(e::ExponentialQueue) = isempty(e.acc)
