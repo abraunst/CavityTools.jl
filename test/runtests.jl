@@ -39,7 +39,7 @@ end
 
 @testset "nonnumerical" begin
     v = string.('a':'z')
-    a = Accumulator(v,*,T->"")
+    a = Accumulator(v, op = *, init = _->"")
     c = cumsum(a)
     for i in eachindex(v)
         @test c[i] == prod(v[1:i])
