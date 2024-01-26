@@ -1,3 +1,38 @@
+struct Cavity{T, op, init} <: AbstractVector{T}
+    acc::Accumulator{T, op, init}
+end
+
+Base.size(c::Cavity) = size(c.acc)
+Base.keys(c::Cavity) = keys(c.acc.sums[1])
+
+function Base.getindex(c::Cavity{T,op,init}, i) where {T, op, init}
+    @boundscheck checkbounds(c, i)
+    a = c.acc
+    s = init(T)
+    i -= 1
+    @inbounds for ak in a.sums
+        j = xor(i, 1) + 1
+        if j in eachindex(ak)
+            s = op(s, ak[j])
+        end
+        i >>= 1
+    end
+    s
+end
+
+function Base.iterate(c::Cavity{T, op, init}, state = (0, fill(init(T), length(c.acc.sums)), fill(init(T), length(c.acc.sums)))) where {T, op, init}
+    i, L, R = state
+    a = c.acc.sums
+    k = i == 0 ? length(a) - 1 : count_ones(xor(i - 1, i))
+    i == length(c) && return nothing
+    for f in k:-1:1
+        j = xor(i >> (f-1), 1) + 1
+        L[f] = isodd(j) && j ∈ eachindex(a[f]) ? op(L[f + 1], a[f][j]) : L[f + 1]
+        R[f] = iseven(j) && j ∈ eachindex(a[f]) ? op(a[f][j], R[f + 1]) : R[f + 1] 
+    end
+    op(first(L), first(R)), (i + 1, L, R)
+end
+
 function cavity!(dest, source, op, init)
     @assert length(dest) == length(source)
     isempty(source) && return init

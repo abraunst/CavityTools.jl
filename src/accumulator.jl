@@ -1,26 +1,22 @@
 """
-An `a = Accumulator(v::Vector)` works as a replacement for `v`
-with extra tracking computation that allow to maintain a live 
-cumsum(a) that gets updated when the vector does.
+An `a = Accumulator(v::Vector; op=+, init=zero)` works as a replacement for `v`
+with extra tracking computation, such as `sum`. See also `CumSum` and `Cavity`
 
 ```
 julia> a = Accumulator([1:10;])
 Accumulator([10, 4, 8, 1, 3, 3, 5, 6, 9, 5])
 
-julia> c = cumsum(a)
-CumSum(Accumulator([10, 4, 8, 1, 3, 3, 5, 6, 9, 5]))
-
-julia> c[end]
+julia> sum(a)
 55
 
 julia> a[1]=0
 0
 
-julia> c[end]
+julia> sum(a)
 54
 ```
 """
-struct Accumulator{T,op,init}
+struct Accumulator{T,op,init} <: AbstractVector{T}
     sums::Vector{Vector{T}}
     function Accumulator(vals::AbstractVector{T}; op=+, init=zero) where T
         a = new{T,op,init}([T[]])
@@ -31,29 +27,12 @@ struct Accumulator{T,op,init}
     end
 end
 
-"""
-An `CumSum(a::Accumulator)` gets updated each time that 
-`a` does. The time for an update and retrieval is both
-`O(log(length(a)))`.
-It is normally constructed with `cumsum(a)`, which takes 
-time `O(1)`
-"""
-struct CumSum{T,op,init}
-    acc::Accumulator{T,op,init}
-end
-
-Base.cumsum(a::Accumulator) = CumSum(a)
-Base.length(c::CumSum) = length(c.acc)
-Base.firstindex(c::CumSum) = 1
-Base.lastindex(c::CumSum) = lastindex(c.acc)
-Base.keys(c::CumSum) = keys(c.acc.sums[begin])
-Base.diff(c::CumSum) = c.acc
-
 Accumulator() = Accumulator(Float64) 
 Accumulator(::Type{T}) where T = Accumulator(T[])
 Accumulator{T}() where {T}  = Accumulator(T)
 
 Base.length(a::Accumulator) = length(a.sums[1])
+Base.size(a::Accumulator) = tuple(length(a))
 
 Base.lastindex(a::Accumulator) = lastindex(a.sums[1])
 
@@ -96,47 +75,23 @@ function Base.setindex!(a::Accumulator{T,op,init},v,i::Integer) where {T,op,init
     end
 end
 
-Base.:(==)(a::Accumulator, b::Accumulator) = a.sums[1] == b.sums[1]
+Base.:(==)(a::Accumulator, b::Accumulator) = first(a.sums) == first(b.sums)
 
-Base.getindex(a::Accumulator, i) = a.sums[1][i]
+Base.getindex(a::Accumulator, i) = first(a.sums)[i]
 
-function Base.getindex(c::CumSum{T,op,init},i) where {T,op,init}
-    a = c.acc
-    m = init(T)
-    K = length(a.sums)
-    for k in K:-1:1
-        s = a.sums[k]
-        if (i >> (k-1)) & 1 == 1
-            m = op(m, s[xor(i >> (k-1), 1) + 1])
-        end
-    end
-    return m
+Base.sum(a::Accumulator{T,+,zero}) where T = only(last(a.sums))
+
+function Base.reduce(op, a::Accumulator{T,OP,init}) where {T,OP,init}
+    @assert op == OP
+    only(last(a.sums))
 end
 
-Base.sum(a::Accumulator) = a.sums[end][end]
+Base.reduce(a::Accumulator{T,op,init}) where {T,op,init} = only(last(a.sums))
 
-function Base.searchsortedfirst(c::CumSum{T,op,init}, r; lt = isless, rev = false) where {T,op,init}
-    a = c.acc
-    x = 0
-    m = init(T)
-    for k in length(a.sums):-1:1
-        s = a.sums[k]
-        x + 1 > length(s) && return length(a) + 1
-        n = op(s[x + 1], m)
-        if xor(rev, lt(n, r))
-            m = n
-            x ⊻= 1
-        end
-        x <<= 1
-    end
-    return (x >>= 1) + 1
-end
-
-
-Base.isempty(a::Accumulator) = isempty(a.sums[1])
+Base.isempty(a::Accumulator) = isempty(first(a.sums))
 function Base.empty!(a::Accumulator)
     resize!(a.sums, 1)
-    resize!(a.sums[1], 0)
+    resize!(first(a.sums), 0)
 end
 
 function Base.show(io::IO, a::Accumulator{T,op,init}) where {T,op,init}
@@ -144,19 +99,4 @@ function Base.show(io::IO, a::Accumulator{T,op,init}) where {T,op,init}
         op !== (+) ? ", op=$op" : "",
         init !== zero ? ", init=$init" : "",
         ")")
-end
-
-function Base.show(io::IO, c::CumSum)
-    print(io, "CumSum(", c.acc, ")")
-end
-
-Base.:(==)(c::CumSum, v::Vector) = v[1] == c.acc[1] && all(c.acc[i] == v[i] - v[i-1] for i=2:lastindex(v))
-Base.:(==)(v::Vector, c::CumSum) = c == v
-
-function Base.iterate(c::CumSum{T, op, init}, state = nothing) where {T, op, init}
-    a = c.acc
-    (s, i) = isnothing(state) ? (init(T), 0) : state
-    i == length(a) && return nothing
-    s = op(s, a[i + 1])
-    (s, (s, i + 1))
 end

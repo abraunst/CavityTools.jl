@@ -44,7 +44,7 @@ end
     for i in eachindex(v)
         @test c[i] == prod(v[1:i])
     end
-    @test c[end] == prod(v) == sum(a)
+    @test c[end] == prod(v) == reduce(a)
     a[2] = "X"
     @test c[5] == "aXcde"
 end
@@ -59,3 +59,14 @@ end
     xcp = pop!(Qcp; rng = MersenneTwister(0))
     @test x == xcp
 end
+
+@testset "cavity" begin
+    x = rand(1:10^4,10^4+11); 
+    a = Accumulator(x);
+    y = sum(x) .- x
+    c = Cavity(a);
+    @test c == y
+    @test cavity(x, +, 0) |> first == y
+end
+
+nothing
