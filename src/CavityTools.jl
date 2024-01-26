@@ -2,7 +2,7 @@ module CavityTools
 
 using Random: default_rng
 
-export Accumulator, CumSum, Cavity, cavity, cavity!, ExponentialQueue, values
+export Accumulator, CumSum, Cavity, cavity, cavity!, ExponentialQueue
 
 
 include("accumulator.jl")
