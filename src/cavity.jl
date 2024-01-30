@@ -20,15 +20,19 @@ function Base.getindex(c::Cavity{T,op,init}, i) where {T, op, init}
     s
 end
 
-function Base.iterate(c::Cavity{T, op, init}, state = (0, fill(init(T), length(c.acc.sums)), fill(init(T), length(c.acc.sums)))) where {T, op, init}
-    i, L, R = state
+function Base.iterate(c::Cavity{T, op, init}, 
+        (i,L,R) = (0, 
+            fill(init(T), length(c.acc.sums)),
+            fill(init(T), length(c.acc.sums)))) where {T, op, init}
+    @inline
+    i == length(c) && return nothing
     a = c.acc.sums
     k = i == 0 ? length(a) - 1 : count_ones(xor(i - 1, i))
-    i == length(c) && return nothing
     for f in k:-1:1
         j = xor(i >> (f-1), 1) + 1
-        L[f] = isodd(j) && j ∈ eachindex(a[f]) ? op(L[f + 1], a[f][j]) : L[f + 1]
-        R[f] = iseven(j) && j ∈ eachindex(a[f]) ? op(a[f][j], R[f + 1]) : R[f + 1] 
+        l, r = L[f + 1], R[f + 1]
+        L[f] = ( isodd(j) && j ∈ eachindex(a[f])) ? op(l, a[f][j]) : l
+        R[f] = (iseven(j) && j ∈ eachindex(a[f])) ? op(a[f][j], r) : r 
     end
     op(first(L), first(R)), (i + 1, L, R)
 end

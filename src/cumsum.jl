@@ -4,6 +4,33 @@ An `CumSum(a::Accumulator)` gets updated each time that
 `O(log(length(a)))`.
 It is normally constructed with `cumsum(a)`, which takes 
 time `O(1)`
+
+```
+julia> a = Accumulator([1:10;])
+10-element Accumulator{Int64, +, zero}:
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+
+julia> c = cumsum(a)
+CumSum(Accumulator([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
+
+julia> c[end]
+55
+
+julia> a[1] = 100
+100
+
+julia> c[end]
+154
+```
 """
 struct CumSum{T,op,init}
     acc::Accumulator{T,op,init}
@@ -54,6 +81,7 @@ function Base.searchsortedfirst(c::CumSum{T,op,init}, r; lt = isless, rev = fals
 end
 
 function Base.iterate(c::CumSum{T, op, init}, state = nothing) where {T, op, init}
+    @inline
     a = c.acc
     sums, i = isnothing(state) ? (fill(init(T), length(a.sums) + 1), 0) : state
     i == length(a) && return nothing
