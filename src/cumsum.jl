@@ -80,8 +80,7 @@ function Base.searchsortedfirst(c::CumSum{T,op,init}, r; lt = isless, rev = fals
     return (x >>= 1) + 1
 end
 
-function Base.iterate(c::CumSum{T, op, init}, state = nothing) where {T, op, init}
-    @inline
+@inline function Base.iterate(c::CumSum{T, op, init}, state = nothing) where {T, op, init}
     a = c.acc
     sums, i = isnothing(state) ? (fill(init(T), length(a.sums) + 1), 0) : state
     i == length(a) && return nothing

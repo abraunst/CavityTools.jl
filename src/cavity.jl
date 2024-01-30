@@ -20,11 +20,10 @@ function Base.getindex(c::Cavity{T,op,init}, i) where {T, op, init}
     s
 end
 
-function Base.iterate(c::Cavity{T, op, init}, 
-        (i,L,R) = (0, 
+@inline function Base.iterate(c::Cavity{T, op, init},
+        (i,L,R) = (0,
             fill(init(T), length(c.acc.sums)),
             fill(init(T), length(c.acc.sums)))) where {T, op, init}
-    @inline
     i == length(c) && return nothing
     a = c.acc.sums
     k = i == 0 ? length(a) - 1 : count_ones(xor(i - 1, i))
@@ -32,7 +31,7 @@ function Base.iterate(c::Cavity{T, op, init},
         j = xor(i >> (f-1), 1) + 1
         l, r = L[f + 1], R[f + 1]
         L[f] = ( isodd(j) && j ∈ eachindex(a[f])) ? op(l, a[f][j]) : l
-        R[f] = (iseven(j) && j ∈ eachindex(a[f])) ? op(a[f][j], r) : r 
+        R[f] = (iseven(j) && j ∈ eachindex(a[f])) ? op(a[f][j], r) : r
     end
     op(first(L), first(R)), (i + 1, L, R)
 end
@@ -41,7 +40,7 @@ function cavity!(dest, source, op, init)
     @assert length(dest) == length(source)
     isempty(source) && return init
     if length(source) == 1
-        @inbounds dest[begin] = init 
+        @inbounds dest[begin] = init
         return op(first(source), init)
     end
     accumulate!(op, dest, source)
