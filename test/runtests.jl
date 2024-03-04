@@ -1,5 +1,6 @@
 using CavityTools
 using Test
+using Random
 
 v = rand(0:200, 20)
 a = Accumulator(v)
@@ -45,5 +46,15 @@ end
     @test a[5] == "aXcde"
 end
 
+
+@testset "Reproducibility" begin
+    Q = ExponentialQueue(3)
+    Q[1] = 0.5; Q[2] = 0.3
+    Qcp = deepcopy(Q)
+
+    x = pop!(Q; rng = MersenneTwister(0))
+    xcp = pop!(Qcp; rng = MersenneTwister(0))
+    @test x == xcp
+end
 
 nothing

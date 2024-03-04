@@ -1,5 +1,7 @@
 module CavityTools
 
+using Random: default_rng
+
 export Accumulator, cavity, cavity!, ExponentialQueue, values
 
 
