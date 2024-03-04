@@ -55,9 +55,9 @@ function Base.deleteat!(e::ExponentialQueue, i)
     e
 end
 
-function Base.pop!(e::ExponentialQueue)
-    t = -log(rand())/sum(e.acc)
-    j = searchsortedfirst(e.acc, rand() * sum(e.acc))
+function Base.pop!(e::ExponentialQueue; rng = Random.default_rng())
+    t = -log(rand(rng))/sum(e.acc)
+    j = searchsortedfirst(e.acc, rand(rng) * sum(e.acc))
     i = e.ridx[j]
     deleteat!(e, i)
     i, t
