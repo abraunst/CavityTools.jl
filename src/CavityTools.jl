@@ -1,6 +1,6 @@
 module CavityTools
 
-using Random: default_rng
+import Random
 
 export Accumulator, CumSum, Cavity, cavity, cavity!, ExponentialQueue
 
