@@ -62,7 +62,7 @@ end
 
 function Base.pop!(e::ExponentialQueue; rng = Random.default_rng())
     t = -log(rand(rng))/sum(e.acc)
-    j = searchsortedfirst(e.acc, rand(rng) * sum(e.acc))
+    j = searchsortedfirst(e.sum, rand(rng) * sum(e.acc))
     i = e.ridx[j]
     deleteat!(e, i)
     i, t
