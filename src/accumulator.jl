@@ -1,20 +1,35 @@
 """
-Accumulator(v) objects acts as a live cumsum(v) that gets updated when the vector does.
-julia> a = Accumulator([1:10;])
-Accumulator{Int64, +, zero}([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [3, 7, 11, 15, 19], [10, 26, 19], [36, 19], [55]])
+An `a = Accumulator(v::Vector; op=+, init=zero)` works as a replacement for `v`
+with extra tracking computation, such as `sum`. See also `CumSum` and `Cavity`
 
-julia> a[end]
+```
+julia> a = Accumulator([1:10;])
+10-element Accumulator{Int64, +, zero}:
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+
+julia> sum(a)
 55
 
 julia> a[1]=0
 0
 
-julia> a[end]
+julia> sum(a)
 54
+
+```
 """
-struct Accumulator{T,op,init}
+struct Accumulator{T,op,init} <: AbstractVector{T}
     sums::Vector{Vector{T}}
-    function Accumulator(vals::Vector{T}, op=+, init=zero) where T
+    function Accumulator(vals::AbstractVector{T}; op=+, init=zero) where T
         a = new{T,op,init}([T[]])
         for x in vals
             push!(a, x)
@@ -27,11 +42,13 @@ Accumulator() = Accumulator(Float64)
 Accumulator(::Type{T}) where T = Accumulator(T[])
 Accumulator{T}() where {T}  = Accumulator(T)
 
-Base.length(a::Accumulator) = length(diff(a))
+Base.length(a::Accumulator) = length(a.sums[1])
+Base.size(a::Accumulator) = tuple(length(a))
 
-Base.lastindex(a::Accumulator) = lastindex(diff(a))
+Base.lastindex(a::Accumulator) = lastindex(a.sums[1])
 
-Base.diff(a::Accumulator) = a.sums[1]
+Base.:(==)(a::Accumulator, v::Vector) = a.sums[1] == v
+Base.:(==)(v::Vector, a::Accumulator) = a.sums[1] == v
 
 function Base.push!(a::Accumulator{T,op,init}, v) where {T, op, init}
     x = length(a)
@@ -53,7 +70,6 @@ function Base.pop!(a::Accumulator{T,op,init}) where {T, op, init}
         x >>= 1
         length(a.sums[k]) > x + 1 && pop!(a.sums[k])
     end
-
 end
 
 function Base.setindex!(a::Accumulator{T,op,init},v,i::Integer) where {T,op,init}
@@ -70,41 +86,28 @@ function Base.setindex!(a::Accumulator{T,op,init},v,i::Integer) where {T,op,init
     end
 end
 
-Base.:(==)(a::Accumulator, b::Accumulator) = (diff(a) == diff(b))
+Base.:(==)(a::Accumulator, b::Accumulator) = first(a.sums) == first(b.sums)
 
-function Base.getindex(a::Accumulator{T,op,init},i) where {T,op,init}
-    m = init(T)
-    K = length(a.sums)
-    for k in K:-1:1
-        s = a.sums[k]
-        if (i >> (k-1)) & 1 == 1
-            m = op(m, s[xor(i >> (k-1), 1) + 1])
-        end
-    end
-    return m
+Base.getindex(a::Accumulator, i) = first(a.sums)[i]
+
+Base.sum(a::Accumulator{T,+,zero}) where T = only(last(a.sums))
+
+function Base.reduce(op, a::Accumulator{T,OP,init}) where {T,OP,init}
+    @assert op == OP
+    only(last(a.sums))
 end
 
-Base.sum(a::Accumulator) = a.sums[end][end]
+Base.reduce(a::Accumulator{T,op,init}) where {T,op,init} = only(last(a.sums))
 
-function Base.searchsortedfirst(a::Accumulator{T,op,init}, r) where {T,op,init}
-    x = 0
-    m = init(T)
-    for k in length(a.sums):-1:1
-        s = a.sums[k]
-        x + 1 > length(s) && return length(a) + 1
-        n = op(s[x + 1], m)
-        if n < r
-            m = n
-            x ⊻= 1
-        end
-        x <<= 1
-    end
-    return (x >>= 1) + 1
-end
-
-
-Base.isempty(a::Accumulator) = isempty(diff(a))
+Base.isempty(a::Accumulator) = isempty(first(a.sums))
 function Base.empty!(a::Accumulator)
     resize!(a.sums, 1)
-    resize!(a.sums[1], 0)
+    resize!(first(a.sums), 0)
+end
+
+function Base.show(io::IO, a::Accumulator{T,op,init}) where {T,op,init}
+    print(io, "Accumulator(", a.sums[1], 
+        op !== (+) ? ", op=$op" : "",
+        init !== zero ? ", init=$init" : "",
+        ")")
 end

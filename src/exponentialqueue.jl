@@ -15,12 +15,17 @@ julia> i,t = pop!(Q) # gets time and id of next event and remove it from the que
 (55, 0.37869716808319576)
 """
 struct ExponentialQueue
-    acc::Accumulator{Float64}
+    acc::Accumulator{Float64,+,zero}
+    sum::CumSum{Float64,+,zero}
     idx::Vector{Int}
     ridx::Vector{Int}
 end
 
-ExponentialQueue(N::Integer) = ExponentialQueue(Accumulator(), fill(0,N), Int[])
+function ExponentialQueue(N::Integer)
+    acc = Accumulator()
+    sum = cumsum(acc)
+    ExponentialQueue(acc, sum, fill(0,N), Int[])
+end
 
 function Base.setindex!(e::ExponentialQueue, p, i)
     if p <= 0
@@ -42,7 +47,7 @@ end
 
 Base.haskey(e::ExponentialQueue, i) = !iszero(e.idx[i])
 
-Base.getindex(e::ExponentialQueue, i) = haskey(e, i) ? diff(e.acc)[e.idx[i]] : 0.0
+Base.getindex(e::ExponentialQueue, i) = haskey(e, i) ? e.acc[e.idx[i]] : 0.0
 
 
 function Base.deleteat!(e::ExponentialQueue, i)
@@ -57,7 +62,7 @@ end
 
 function Base.pop!(e::ExponentialQueue; rng = Random.default_rng())
     t = -log(rand(rng))/sum(e.acc)
-    j = searchsortedfirst(e.acc, rand(rng) * sum(e.acc))
+    j = searchsortedfirst(e.sum, rand(rng) * sum(e.acc))
     i = e.ridx[j]
     deleteat!(e, i)
     i, t

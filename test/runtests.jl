@@ -4,6 +4,7 @@ using Random
 
 v = rand(0:200, 20)
 a = Accumulator(v)
+c = cumsum(a)
 
 @testset "Accumulator setindex!" begin
     @test sum(a) == sum(v)
@@ -30,20 +31,22 @@ end
 
 @testset "Accumulator searchsortedfirst" begin
     c = cumsum(v)
+    ca = cumsum(a)
     for r in c[1]-0.5:0.5:c[end]+0.5
-        @test searchsortedfirst(c,r) == searchsortedfirst(a,r)
+        @test searchsortedfirst(c,r) == searchsortedfirst(ca,r)
     end
 end
 
 @testset "nonnumerical" begin
     v = string.('a':'z')
-    a = Accumulator(v,*,T->"")
+    a = Accumulator(v, op = *, init = _->"")
+    c = cumsum(a)
     for i in eachindex(v)
-        @test a[i] == prod(v[1:i])
+        @test c[i] == prod(v[1:i])
     end
-    @test a[end] == prod(v) == sum(a)
+    @test c[end] == prod(v) == reduce(a)
     a[2] = "X"
-    @test a[5] == "aXcde"
+    @test c[5] == "aXcde"
 end
 
 
@@ -55,6 +58,15 @@ end
     x = pop!(Q; rng = MersenneTwister(0))
     xcp = pop!(Qcp; rng = MersenneTwister(0))
     @test x == xcp
+end
+
+@testset "cavity" begin
+    x = rand(1:10^4,10^4+11); 
+    a = Accumulator(x);
+    y = sum(x) .- x
+    c = Cavity(a);
+    @test c == y
+    @test cavity(x, +, 0) |> first == y
 end
 
 nothing
