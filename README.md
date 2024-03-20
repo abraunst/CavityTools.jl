@@ -12,7 +12,7 @@ If `op` is commutative with exact inverse `invop`, you could obtain the same res
 	- `sum(a)`, `cumsum(a)`, `cavity(a)` all require time `O(1)`.
 	- See also: `CumSum` and `Cavity`.
 
-* `c::CumSum(a::Accumulator)`: keeps a live-updated cumsum of `a`. 
+* `c::CumSum(a::Accumulator)`: keeps a live-updated `cumsum` of `a`. 
 	- Create it with `c = cumsum(a::Accumulator)`
 	- Retrieval `c[i]` takes time `O(log N)`.
 	- `collect(c)` takes time `O(N)`
@@ -25,5 +25,5 @@ If `op` is commutative with exact inverse `invop`, you could obtain the same res
 
 * `Q::ExponentialQueue(N::Integer)`: Using an `Accumulator` plus index tracking, it is intended for sampling in a Gillespie-like scheme.
 	- Event indices are in `1:N`. 
-	- Rates can be queried by `getindex` (i.e. `r = Q[i]`) and updated via `setindex` (i.e. `Q[i] = r`).
+	- Rates can be queried by `getindex` (i.e. `r = Q[i]`) and updated via `setindex!` (i.e. `Q[i] = r`).
 	- Event time and type can extracted from the queue by `pop!(Q)`
