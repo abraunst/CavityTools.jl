@@ -69,4 +69,15 @@ end
     @test cavity(x, +, 0) |> first == y
 end
 
+@testset "ExponentialQueue" begin
+    e = ExponentialQueue(10)
+    e[5] = 10
+    i,t = peek(e)
+    @test i == 5
+    @test !isempty(e)
+    i,t = pop!(e)
+    @test i == 5
+    @test isempty(e)
+end
+
 nothing
