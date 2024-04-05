@@ -44,7 +44,7 @@ end
 function Base.setindex!(e::AbstractExponentialQueue, p, i)
     if p <= 0
         # do not store null rates
-        haskey(e, i) && deleteat!(e, i)
+        haskey(e, i) && delete!(e, i)
         return p
     end
 
@@ -65,7 +65,7 @@ Base.haskey(e::ExponentialQueueDict, i) = haskey(e.idx, i)
 Base.getindex(e::AbstractExponentialQueue, i) = haskey(e, i) ? e.acc[e.idx[i]] : 0.0
 
 
-function Base.deleteat!(e::AbstractExponentialQueue, i)
+function Base.delete!(e::AbstractExponentialQueue, i)
     l, k = e.idx[i], e.ridx[length(e.acc)]
     e.acc[l] = e.acc.sums[1][end]
     e.idx[k], e.ridx[l] = l, k
@@ -84,14 +84,21 @@ end
 
 function Base.pop!(e::AbstractExponentialQueue; rng = Random.default_rng())
     i, t = peek(e; rng)
-    deleteat!(e, i)
+    delete!(e, i)
     i, t
 end
 
 Base.isempty(e::AbstractExponentialQueue) = isempty(e.acc)
 
-function Base.empty!(e::AbstractExponentialQueue)
+function Base.empty!(e::ExponentialQueue)
     e.idx .= 0
+    empty!(e.ridx)
+    empty!(e.acc)
+end
+
+function Base.empty!(e::
+    ExponentialQueueDict)
+    empty!(e.idx)
     empty!(e.ridx)
     empty!(e.acc)
 end
