@@ -41,6 +41,8 @@ function ExponentialQueueDict{K}() where K
     ExponentialQueueDict(acc, cumsum(acc), Dict{K,Int}(), K[])
 end
 
+ExponentialQueueDict() = ExponentialQueueDict{Any}()
+
 function Base.setindex!(e::AbstractExponentialQueue, p, i)
     if p <= 0
         # do not store null rates
