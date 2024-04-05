@@ -14,20 +14,34 @@ julia> Q[55] = 2.3 #updates rate of event 55
 julia> i,t = pop!(Q) # gets time and id of next event and remove it from the queue
 (55, 0.37869716808319576)
 """
-struct ExponentialQueue
+
+abstract type AbstractExponentialQueue{T} end
+
+struct ExponentialQueue <: AbstractExponentialQueue{Int}
     acc::Accumulator{Float64,+,zero}
     sum::CumSum{Float64,+,zero}
     idx::Vector{Int}
     ridx::Vector{Int}
 end
 
-function ExponentialQueue(N::Integer)
-    acc = Accumulator()
-    sum = cumsum(acc)
-    ExponentialQueue(acc, sum, fill(0,N), Int[])
+struct ExponentialQueueDict{K} <: AbstractExponentialQueue{K}
+    acc::Accumulator{Float64,+,zero}
+    sum::CumSum{Float64,+,zero}
+    idx::Dict{K,Int}
+    ridx::Vector{K}
 end
 
-function Base.setindex!(e::ExponentialQueue, p, i)
+function ExponentialQueue(N::Integer)
+    acc = Accumulator()
+    ExponentialQueue(acc, cumsum(acc), fill(0,N), Int[])
+end
+
+function ExponentialQueueDict{K}() where K
+    acc = Accumulator()
+    ExponentialQueueDict(acc, cumsum(acc), Dict{K,Int}(), K[])
+end
+
+function Base.setindex!(e::AbstractExponentialQueue, p, i)
     if p <= 0
         # do not store null rates
         haskey(e, i) && deleteat!(e, i)
@@ -37,7 +51,6 @@ function Base.setindex!(e::ExponentialQueue, p, i)
     if haskey(e, i)
         e.acc[e.idx[i]] = p
     else
-        e.idx[i] == 0
         push!(e.acc, p)
         e.idx[i] = length(e.acc)
         push!(e.ridx, i)
@@ -47,10 +60,12 @@ end
 
 Base.haskey(e::ExponentialQueue, i) = !iszero(e.idx[i])
 
-Base.getindex(e::ExponentialQueue, i) = haskey(e, i) ? e.acc[e.idx[i]] : 0.0
+Base.haskey(e::ExponentialQueueDict, i) = haskey(e.idx, i)
+
+Base.getindex(e::AbstractExponentialQueue, i) = haskey(e, i) ? e.acc[e.idx[i]] : 0.0
 
 
-function Base.deleteat!(e::ExponentialQueue, i)
+function Base.deleteat!(e::AbstractExponentialQueue, i)
     l, k = e.idx[i], e.ridx[length(e.acc)]
     e.acc[l] = e.acc.sums[1][end]
     e.idx[k], e.ridx[l] = l, k
@@ -60,22 +75,22 @@ function Base.deleteat!(e::ExponentialQueue, i)
     e
 end
 
-function Base.peek(e::ExponentialQueue; rng = Random.default_rng())
+function Base.peek(e::AbstractExponentialQueue; rng = Random.default_rng())
     t = -log(rand(rng))/sum(e.acc)
     j = searchsortedfirst(e.sum, rand(rng) * sum(e.acc))
     i = e.ridx[j]
     i, t
 end
 
-function Base.pop!(e::ExponentialQueue; rng = Random.default_rng())
+function Base.pop!(e::AbstractExponentialQueue; rng = Random.default_rng())
     i, t = peek(e; rng)
     deleteat!(e, i)
     i, t
 end
 
-Base.isempty(e::ExponentialQueue) = isempty(e.acc)
+Base.isempty(e::AbstractExponentialQueue) = isempty(e.acc)
 
-function Base.empty!(e::ExponentialQueue)
+function Base.empty!(e::AbstractExponentialQueue)
     e.idx .= 0
     empty!(e.ridx)
     empty!(e.acc)
