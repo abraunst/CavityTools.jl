@@ -23,7 +23,10 @@ If `op` is commutative with exact inverse `invop`, you could obtain the same res
 	- Retrieval `c[i]` takes time `O(log N)`.
 	- `collect(c)` takes time `O(N)`, but is slower than `cavity(v::Vector)`.
 
-* `Q::ExponentialQueue(N::Integer)`: Using an `Accumulator` plus index tracking, it is intended for sampling in a Gillespie-like scheme.
-	- Event indices are in `1:N`. 
-	- Rates can be queried by `getindex` (i.e. `r = Q[i]`) and updated via `setindex!` (i.e. `Q[i] = r`).
-	- Event time and type can extracted from the queue by `pop!(Q)`
+
+* `Q::ExponentialQueueDict{K}()`: `Dict`-like interface to a collection of events with associated independent probability rates, intended for sampling on a Gillespie-like scheme.
+	- Events are of type `K`. 
+	- Rates can be queried by `getindex` (i.e. `r = Q[k]`) and updated via `setindex!` (i.e. `Q[l] = r`). both in time `O(log N)` where `N` is the number of stored events. 
+	- Next event type and time can extracted from the queue by `k,t = pop!(Q)` or `k,t=peek(Q)`. On `pop!`, event `k` is then removed from the collection. `pop!` takes time `O(log N)`, `peek` is O(1).
+
+* `Q::ExponentialQueue(N::Integer)`: Like `ExponentialQueue{Int}` but events are stored on a vector instead of a `Dict`, so it is slightly more efficient. Event indices are in `1:N`.
