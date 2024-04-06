@@ -80,4 +80,15 @@ end
     @test isempty(e)
 end
 
+@testset "ExponentialQueueDict" begin
+    e = ExponentialQueueDict{String}()
+    e["event1"] = 10
+    i,t = peek(e)
+    @test i == "event1"
+    @test !isempty(e)
+    i,t = pop!(e)
+    @test i == "event1"
+    @test isempty(e)
+end
+
 nothing
