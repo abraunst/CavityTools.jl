@@ -55,7 +55,6 @@ function Base.show(io::IO, Q::ExponentialQueueDict{K}) where K
     print(io, "ExponentialQueueDict(", Pair{K,Float64}[i=>Q.acc[Q.idx[i]] for i in eachindex(Q.idx)], ")")
 end
 
-
 function ExponentialQueueDict{K}() where K
     acc = Accumulator()
     ExponentialQueueDict(acc, cumsum(acc), Dict{K,Int}(), K[])
@@ -126,8 +125,7 @@ function Base.empty!(e::ExponentialQueue)
     empty!(e.acc)
 end
 
-function Base.empty!(e::
-    ExponentialQueueDict)
+function Base.empty!(e::ExponentialQueueDict)
     empty!(e.idx)
     empty!(e.ridx)
     empty!(e.acc)
