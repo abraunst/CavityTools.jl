@@ -79,9 +79,13 @@ end
 
 function Base.peek(e::AbstractExponentialQueue; rng = Random.default_rng())
     t = -log(rand(rng))/sum(e.acc)
-    j = searchsortedfirst(e.sum, rand(rng) * sum(e.acc))
-    i = e.ridx[j]
+    i = peekevent(e, rng)
     i, t
+end
+
+function peekevent(e::AbstractExponentialQueue; rng = Random.default_rng())
+    j = searchsortedfirst(e.sum, rand(rng) * sum(e.acc))
+    i = e.ridx[j]    
 end
 
 function Base.pop!(e::AbstractExponentialQueue; rng = Random.default_rng())
