@@ -24,6 +24,26 @@ struct ExponentialQueue <: AbstractExponentialQueue{Int}
     ridx::Vector{Int}
 end
 
+function ExponentialQueue(N::Integer)
+    acc = Accumulator()
+    ExponentialQueue(acc, cumsum(acc), fill(0,N), Int[])
+end
+
+function ExponentialQueue(ridx::AbstractVector{Int}, R::AbstractVector{Float64})
+    N = maximum(ridx)
+    idx = fill(0, N)
+    for (i,vi) in pairs(ridx)
+        idx[vi] = i
+    end
+    acc = Accumulator(R)
+    ExponentialQueue(acc, cumsum(acc), idx, ridx)
+end
+
+function Base.show(io::IO, Q::ExponentialQueue) 
+    print(io, "ExponentialQueue(", Q.ridx, ", ", Q.acc.sums[1], ")")
+end
+
+
 struct ExponentialQueueDict{K} <: AbstractExponentialQueue{K}
     acc::Accumulator{Float64,+,zero}
     sum::CumSum{Float64,+,zero}
@@ -31,14 +51,19 @@ struct ExponentialQueueDict{K} <: AbstractExponentialQueue{K}
     ridx::Vector{K}
 end
 
-function ExponentialQueue(N::Integer)
-    acc = Accumulator()
-    ExponentialQueue(acc, cumsum(acc), fill(0,N), Int[])
+function Base.show(io::IO, Q::ExponentialQueueDict{K}) where K
+    print(io, "ExponentialQueueDict(", Pair{K,Float64}[i=>Q.acc[Q.idx[i]] for i in eachindex(Q.idx)], ")")
 end
+
 
 function ExponentialQueueDict{K}() where K
     acc = Accumulator()
     ExponentialQueueDict(acc, cumsum(acc), Dict{K,Int}(), K[])
+end
+
+function ExponentialQueueDict(v::AbstractVector{Pair{K,Float64}}) where K
+    acc = Accumulator(last.(v))
+    ExponentialQueueDict(acc, cumsum(acc), Dict(k=>i for (i,(k,_)) in pairs(v)), first.(v))
 end
 
 ExponentialQueueDict() = ExponentialQueueDict{Any}()
