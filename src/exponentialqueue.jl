@@ -84,7 +84,7 @@ end
 
 function peekevent(e::AbstractExponentialQueue; rng = Random.default_rng())
     j = searchsortedfirst(e.sum, rand(rng) * sum(e.acc))
-    i = e.ridx[j]    
+    e.ridx[min(j, lastindex(e.ridx))]    
 end
 
 function Base.pop!(e::AbstractExponentialQueue; rng = Random.default_rng())
