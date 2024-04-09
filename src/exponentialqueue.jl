@@ -66,7 +66,6 @@ Base.haskey(e::ExponentialQueueDict, i) = haskey(e.idx, i)
 
 Base.getindex(e::AbstractExponentialQueue, i) = haskey(e, i) ? e.acc[e.idx[i]] : 0.0
 
-
 function Base.delete!(e::AbstractExponentialQueue, i)
     l, k = e.idx[i], e.ridx[length(e.acc)]
     e.acc[l] = e.acc.sums[1][end]
@@ -79,7 +78,7 @@ end
 
 function Base.peek(e::AbstractExponentialQueue; rng = Random.default_rng())
     t = -log(rand(rng))/sum(e.acc)
-    i = peekevent(e, rng)
+    i = peekevent(e; rng)
     i, t
 end
 
