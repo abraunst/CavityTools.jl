@@ -1,6 +1,7 @@
 # CavityTools
 
-[![Coverage](https://codecov.io/gh/abraunst/CavityTools.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/abraunst/CavityTools.jl)
+[![Coverage](https://codecov.io/gh/abraunst/CavityTools.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/abraunst/CavityTools.jl) [![Build Status](https://github.com/abraunst/CavityTools.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/abraunst/CavityTools.jl/actions/workflows/CI.yml?query=branch%3Amain)
+
 
 This small package contains:
 
