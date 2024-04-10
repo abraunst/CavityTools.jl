@@ -1,5 +1,16 @@
+
+abstract type AbstractExponentialQueue{T} end
+
+struct ExponentialQueue <: AbstractExponentialQueue{Int}
+    acc::Accumulator{Float64,+,zero}
+    sum::CumSum{Float64,+,zero}
+    idx::Vector{Int}
+    ridx::Vector{Int}
+end
+
+
 """
-`ExponentialQueue(N)`` keeps an updatable queue of up to `N` events with ids `1...N` and contant rates Q[1] ... Q[N]. 
+`ExponentialQueue(N)` keeps an updatable queue of up to `N` events with ids `1...N` and contant rates Q[1] ... Q[N]. 
 This is intended for sampling in continuous time.
 
 julia> Q = ExponentialQueue(100)
@@ -13,17 +24,9 @@ julia> Q[55] = 2.3 #updates rate of event 55
 
 julia> i,t = pop!(Q) # gets time and id of next event and remove it from the queue
 (55, 0.37869716808319576)
+
+See also: `ExponentialQueueDict`
 """
-
-abstract type AbstractExponentialQueue{T} end
-
-struct ExponentialQueue <: AbstractExponentialQueue{Int}
-    acc::Accumulator{Float64,+,zero}
-    sum::CumSum{Float64,+,zero}
-    idx::Vector{Int}
-    ridx::Vector{Int}
-end
-
 function ExponentialQueue(N::Integer)
     acc = Accumulator()
     ExponentialQueue(acc, cumsum(acc), fill(0,N), Int[])
@@ -44,6 +47,24 @@ function Base.show(io::IO, Q::ExponentialQueue)
 end
 
 
+"""
+`ExponentialQueueDict{K}` keeps an updatable queue of elements of type `K` with contant rates Q[k]. 
+This is intended for sampling in continuous time.
+
+julia> Q = ExponentialQueueDict{Int}()
+ExponentialQueueDict(Pair{Int64, Float64}[])
+
+julia> Q[1] = 1.2 # updates rate of event 1
+1.2
+
+julia> Q[55] = 2.3 # updates rate of event 55
+2.3
+
+julia> i,t = pop!(Q) # gets time and id of next event and remove it from the queue
+(55, 0.37869716808319576)
+
+See also: `ExponentialQueue` for a slightly more efficient queue for the case `K == Int`
+"""
 struct ExponentialQueueDict{K} <: AbstractExponentialQueue{K}
     acc::Accumulator{Float64,+,zero}
     sum::CumSum{Float64,+,zero}
@@ -100,17 +121,26 @@ function Base.delete!(e::AbstractExponentialQueue, i)
     e
 end
 
+"""
+k,t = peek(Q): Sample next event and time from the queue.
+"""
 function Base.peek(e::AbstractExponentialQueue; rng = Random.default_rng())
     t = -log(rand(rng))/sum(e.acc)
     i = peekevent(e; rng)
     i, t
 end
 
+"""
+peekevent(Q; rng): Sample next event from the queue (with probability proportional to its rate)
+"""
 function peekevent(e::AbstractExponentialQueue; rng = Random.default_rng())
     j = searchsortedfirst(e.sum, rand(rng) * sum(e.acc))
     e.ridx[min(j, lastindex(e.ridx))]    
 end
 
+"""
+k,t = pop!(Q): Sample next event and time from the queue and remove it from the queue.
+"""
 function Base.pop!(e::AbstractExponentialQueue; rng = Random.default_rng())
     i, t = peek(e; rng)
     delete!(e, i)
