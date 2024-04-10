@@ -24,6 +24,26 @@ struct ExponentialQueue <: AbstractExponentialQueue{Int}
     ridx::Vector{Int}
 end
 
+function ExponentialQueue(N::Integer)
+    acc = Accumulator()
+    ExponentialQueue(acc, cumsum(acc), fill(0,N), Int[])
+end
+
+function ExponentialQueue(ridx::AbstractVector{Int}, R::AbstractVector{Float64})
+    N = maximum(ridx)
+    idx = fill(0, N)
+    for (i,vi) in pairs(ridx)
+        idx[vi] = i
+    end
+    acc = Accumulator(R)
+    ExponentialQueue(acc, cumsum(acc), idx, ridx)
+end
+
+function Base.show(io::IO, Q::ExponentialQueue) 
+    print(io, "ExponentialQueue(", Q.ridx, ", ", Q.acc.sums[1], ")")
+end
+
+
 struct ExponentialQueueDict{K} <: AbstractExponentialQueue{K}
     acc::Accumulator{Float64,+,zero}
     sum::CumSum{Float64,+,zero}
@@ -31,14 +51,18 @@ struct ExponentialQueueDict{K} <: AbstractExponentialQueue{K}
     ridx::Vector{K}
 end
 
-function ExponentialQueue(N::Integer)
-    acc = Accumulator()
-    ExponentialQueue(acc, cumsum(acc), fill(0,N), Int[])
+function Base.show(io::IO, Q::ExponentialQueueDict{K}) where K
+    print(io, "ExponentialQueueDict(", Pair{K,Float64}[i=>Q.acc[Q.idx[i]] for i in eachindex(Q.idx)], ")")
 end
 
 function ExponentialQueueDict{K}() where K
     acc = Accumulator()
     ExponentialQueueDict(acc, cumsum(acc), Dict{K,Int}(), K[])
+end
+
+function ExponentialQueueDict(v::AbstractVector{Pair{K,Float64}}) where K
+    acc = Accumulator(last.(v))
+    ExponentialQueueDict(acc, cumsum(acc), Dict(k=>i for (i,(k,_)) in pairs(v)), first.(v))
 end
 
 ExponentialQueueDict() = ExponentialQueueDict{Any}()
@@ -66,7 +90,6 @@ Base.haskey(e::ExponentialQueueDict, i) = haskey(e.idx, i)
 
 Base.getindex(e::AbstractExponentialQueue, i) = haskey(e, i) ? e.acc[e.idx[i]] : 0.0
 
-
 function Base.delete!(e::AbstractExponentialQueue, i)
     l, k = e.idx[i], e.ridx[length(e.acc)]
     e.acc[l] = e.acc.sums[1][end]
@@ -79,9 +102,13 @@ end
 
 function Base.peek(e::AbstractExponentialQueue; rng = Random.default_rng())
     t = -log(rand(rng))/sum(e.acc)
-    j = searchsortedfirst(e.sum, rand(rng) * sum(e.acc))
-    i = e.ridx[j]
+    i = peekevent(e; rng)
     i, t
+end
+
+function peekevent(e::AbstractExponentialQueue; rng = Random.default_rng())
+    j = searchsortedfirst(e.sum, rand(rng) * sum(e.acc))
+    e.ridx[min(j, lastindex(e.ridx))]    
 end
 
 function Base.pop!(e::AbstractExponentialQueue; rng = Random.default_rng())
@@ -98,8 +125,7 @@ function Base.empty!(e::ExponentialQueue)
     empty!(e.acc)
 end
 
-function Base.empty!(e::
-    ExponentialQueueDict)
+function Base.empty!(e::ExponentialQueueDict)
     empty!(e.idx)
     empty!(e.ridx)
     empty!(e.acc)

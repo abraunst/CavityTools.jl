@@ -2,7 +2,7 @@ module CavityTools
 
 import Random
 
-export Accumulator, CumSum, Cavity, cavity, cavity!, ExponentialQueue, ExponentialQueueDict
+export Accumulator, CumSum, Cavity, cavity, cavity!, ExponentialQueue, ExponentialQueueDict, peekevent
 
 
 include("accumulator.jl")
