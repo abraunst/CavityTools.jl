@@ -70,13 +70,15 @@ end
 end
 
 @testset "ExponentialQueue" begin
-    e = ExponentialQueue(10)
-    e[5] = 10
+    e = ExponentialQueue([5,10],[10.0,0.0])
     i,t = peek(e)
     @test i == 5
     @test !isempty(e)
     i,t = pop!(e)
     @test i == 5
+    @test isempty(e)
+    e[10] = 5
+    empty!(e)
     @test isempty(e)
 end
 
@@ -88,6 +90,10 @@ end
     @test !isempty(e)
     i,t = pop!(e)
     @test i == "event1"
+    @test isempty(e)
+    e = ExponentialQueueDict{Int}()
+    e[1000] = 10
+    empty!(e)
     @test isempty(e)
 end
 

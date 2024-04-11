@@ -35,11 +35,17 @@ end
 function ExponentialQueue(ridx::AbstractVector{Int}, R::AbstractVector{Float64})
     N = maximum(ridx)
     idx = fill(0, N)
-    for (i,vi) in pairs(ridx)
-        idx[vi] = i
+    ridx2 = Int[]
+    R2 = Float64[]
+    for (i,(vi,ri)) in enumerate(zip(ridx,R))
+        if ri > 0
+            idx[vi] = i
+            push!(ridx2, vi)
+            push!(R2, ri)
+        end
     end
-    acc = Accumulator(R)
-    ExponentialQueue(acc, cumsum(acc), idx, ridx)
+    acc = Accumulator(R2)
+    ExponentialQueue(acc, cumsum(acc), idx, ridx2)
 end
 
 function Base.show(io::IO, Q::ExponentialQueue) 
