@@ -73,6 +73,7 @@ end
     y = sum(x) .- x
     c = Cavity(a);
     @test c == y
+    @test all(c[i] == y[i] for i in eachindex(c))
     @test cavity(x, +, 0) |> first == y
 end
 
