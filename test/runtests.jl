@@ -29,9 +29,16 @@ end
 
 
 
-@testset "Accumulator searchsortedfirst" begin
+@testset "Cumsum" begin
     c = cumsum(v)
     ca = cumsum(a)
+    @test c == ca
+    @test c == collect(ca)
+    @test c == collect(c)
+    @test diff(ca) == diff(c)
+    @test keys(ca) == keys(v)
+    @test length(ca) == length(v)
+    @test firstindex(ca) == 1
     for r in c[1]-0.5:0.5:c[end]+0.5
         @test searchsortedfirst(c,r) == searchsortedfirst(ca,r)
     end

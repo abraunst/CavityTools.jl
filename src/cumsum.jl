@@ -40,8 +40,8 @@ Base.cumsum(a::Accumulator) = CumSum(a)
 Base.length(c::CumSum) = length(c.acc)
 Base.firstindex(c::CumSum) = 1
 Base.lastindex(c::CumSum) = lastindex(c.acc)
-Base.keys(c::CumSum) = keys(c.acc.sums[begin])
-Base.diff(c::CumSum) = c.acc
+Base.keys(c::CumSum) = keys(c.acc)
+Base.diff(c::CumSum) = @view c.acc[2:end]
 
 function Base.getindex(c::CumSum{T,op,init},i) where {T,op,init}
     a = c.acc
