@@ -96,6 +96,9 @@ end
 @testset "ExponentialQueueDict" begin
     e = ExponentialQueueDict{String}()
     e["event1"] = 10
+    @test e["event2"] == 0
+    @test !haskey(e, "event2")
+    @test (e["event1"] = 10; e["event1"] == 10)
     i,t = peek(e)
     @test i == "event1"
     @test !isempty(e)
