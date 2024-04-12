@@ -6,7 +6,10 @@ v = rand(0:200, 20)
 a = Accumulator(v)
 c = cumsum(a)
 
-@testset "Accumulator setindex!" begin
+@testset "Accumulator" begin
+    @test a == v
+    @test a == Accumulator(v)
+    @test Accumulator(v) == a
     @test sum(a) == sum(v)
     @test a.sums == Accumulator(v).sums
     a[3] = v[3] = 70

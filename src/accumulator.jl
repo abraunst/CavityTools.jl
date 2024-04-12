@@ -92,11 +92,6 @@ Base.getindex(a::Accumulator, i) = first(a.sums)[i]
 
 Base.sum(a::Accumulator{T,+,zero}) where T = only(last(a.sums))
 
-function Base.reduce(op, a::Accumulator{T,OP,init}) where {T,OP,init}
-    @assert op == OP
-    only(last(a.sums))
-end
-
 Base.reduce(a::Accumulator{T,op,init}) where {T,op,init} = only(last(a.sums))
 
 Base.isempty(a::Accumulator) = isempty(first(a.sums))
