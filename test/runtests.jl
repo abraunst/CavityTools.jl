@@ -34,6 +34,7 @@ end
 
 
 @testset "Cumsum" begin
+    @test string(CumSum(Accumulator([1]))) == "CumSum(Accumulator([1]))"
     c = cumsum(v)
     ca = cumsum(a)
     @test c == ca
