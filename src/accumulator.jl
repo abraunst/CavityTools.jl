@@ -47,8 +47,8 @@ Base.size(a::Accumulator) = tuple(length(a))
 
 Base.lastindex(a::Accumulator) = lastindex(a.sums[1])
 
-Base.:(==)(a::Accumulator, v::Vector) = a.sums[1] == v
-Base.:(==)(v::Vector, a::Accumulator) = a.sums[1] == v
+Base.:(==)(a::Accumulator, v::AbstractVector) = a.sums[1] == v
+Base.:(==)(v::AbstractVector, a::Accumulator) = a.sums[1] == v
 
 function Base.push!(a::Accumulator{T,op,init}, v) where {T, op, init}
     x = length(a)
