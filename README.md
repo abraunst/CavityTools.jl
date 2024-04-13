@@ -22,7 +22,7 @@ This small package contains:
 * `c::Cavity(a::Accumulator)`: keeps a live-updated `cavity` of `a`.
   * Create it with `c = cavity(a::Accumulator)`.
   * Retrieval `c[i]` takes time `O(log N)`.
-  *`collect(c)` takes time `O(N)` (but is slower than `cavity(v::Vector)`).
+  * `collect(c)` takes time `O(N)` (but is slower than `cavity(v::Vector)`).
 
 
 * `Q::ExponentialQueueDict{K}()`: `Dict`-like interface to a collection of events with associated independent probability rates, intended for sampling on a Gillespie-like scheme.

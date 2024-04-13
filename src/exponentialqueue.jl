@@ -87,12 +87,17 @@ function ExponentialQueueDict{K}() where K
     ExponentialQueueDict(acc, cumsum(acc), Dict{K,Int}(), K[])
 end
 
-function ExponentialQueueDict(v::AbstractVector{Pair{K,Float64}}) where K
-    acc = Accumulator(last.(v))
-    ExponentialQueueDict(acc, cumsum(acc), Dict(k=>i for (i,(k,_)) in pairs(v)), first.(v))
+function ExponentialQueueDict(v)
+    acc = Accumulator([r for (_,r) in v])
+    ExponentialQueueDict(acc, cumsum(acc), Dict(k=>i for (i,(k,_)) in enumerate(v)), [i for (i,_) in v])
 end
 
+ExponentialQueueDict(D::Dict{K,Float64}) where K = ExponentialQueueDict(collect(D))
+
 ExponentialQueueDict() = ExponentialQueueDict{Any}()
+
+Dict(e::AbstractExponentialQueue) = Dict(k=>e.acc[i] for (k,i) in pairs(e.idx) if !iszero(e.acc[i]))
+
 
 function Base.setindex!(e::AbstractExponentialQueue, p, i)
     if p <= 0
@@ -117,13 +122,25 @@ Base.haskey(e::ExponentialQueueDict, i) = haskey(e.idx, i)
 
 Base.getindex(e::AbstractExponentialQueue, i) = haskey(e, i) ? e.acc[e.idx[i]] : 0.0
 
-function Base.delete!(e::AbstractExponentialQueue, i)
+
+
+function _delete!(e::AbstractExponentialQueue, i)
     l, k = e.idx[i], e.ridx[length(e.acc)]
     e.acc[l] = e.acc.sums[1][end]
     e.idx[k], e.ridx[l] = l, k
-    e.idx[i] = 0
     pop!(e.acc)
     pop!(e.ridx)
+end
+
+function Base.delete!(e::ExponentialQueueDict, i)
+    _delete!(e, i)
+    delete!(e.idx, i)
+    e
+end
+
+function Base.delete!(e::ExponentialQueue, i)
+    _delete!(e, i)
+    e.idx[i] = 0
     e
 end
 
@@ -166,3 +183,6 @@ function Base.empty!(e::ExponentialQueueDict)
     empty!(e.ridx)
     empty!(e.acc)
 end
+
+
+Base.:(==)(e1::AbstractExponentialQueue, e2::AbstractExponentialQueue) = (Dict(e1) == Dict(e2))

@@ -95,6 +95,9 @@ end
 
 @testset "ExponentialQueueDict" begin
     e = ExponentialQueueDict{String}()
+    e["event1"] = 5
+    e["event1"] = 0
+    @test !haskey(e, "event1")
     e["event1"] = 10
     @test e["event2"] == 0
     @test !haskey(e, "event2")
@@ -109,6 +112,13 @@ end
     e[1000] = 10
     empty!(e)
     @test isempty(e)
+    e1 = ExponentialQueueDict{Symbol}()
+    events = [:a => 1.0, :b => 2.0, :c => 3.0]
+    for (k,r) in events
+        e1[k] = r
+    end
+    e2 = ExponentialQueueDict(events)
+    @test e1 == e2
 end
 
 nothing
