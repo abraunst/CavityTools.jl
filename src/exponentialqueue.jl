@@ -88,11 +88,9 @@ function ExponentialQueueDict{K}() where K
 end
 
 function ExponentialQueueDict(v)
-    acc = Accumulator([r for (_,r) in v])
+    acc = Accumulator([float(r) for (_,r) in v])
     ExponentialQueueDict(acc, cumsum(acc), Dict(k=>i for (i,(k,_)) in enumerate(v)), [i for (i,_) in v])
 end
-
-ExponentialQueueDict(D::Dict{K,Float64}) where K = ExponentialQueueDict(collect(D))
 
 ExponentialQueueDict() = ExponentialQueueDict{Any}()
 

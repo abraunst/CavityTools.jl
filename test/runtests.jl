@@ -112,13 +112,15 @@ end
     e[1000] = 10
     empty!(e)
     @test isempty(e)
-    e1 = ExponentialQueueDict{Symbol}()
-    events = [:a => 1.0, :b => 2.0, :c => 3.0]
+    e1 = ExponentialQueue(3)
+    @test string(e1) == "ExponentialQueue(Int64[], Float64[])"
+    events = Dict(1 => 1.0, 2 => 2.0, 3 => 3.0)
     for (k,r) in events
         e1[k] = r
     end
     e2 = ExponentialQueueDict(events)
     @test e1 == e2
+    @test string(e2) == "ExponentialQueueDict([2 => 2.0, 3 => 3.0, 1 => 1.0])"
 end
 
 nothing
