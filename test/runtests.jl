@@ -7,6 +7,7 @@ a = Accumulator(v)
 c = cumsum(a)
 
 @testset "Accumulator" begin
+    @test string(Accumulator()) == "Accumulator(Float64[])"
     @test a == v
     @test a == Accumulator(v)
     @test Accumulator(v) == a
