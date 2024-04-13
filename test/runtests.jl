@@ -78,6 +78,7 @@ end
     a = Accumulator(x);
     y = sum(x) .- x
     c = Cavity(a);
+    @test keys(y) == keys(c) 
     @test c == y
     @test all(c[i] == y[i] for i in eachindex(c))
     @test cavity(x, +, 0) |> first == y
@@ -112,7 +113,7 @@ end
     i,t = pop!(e)
     @test i == "event1"
     @test isempty(e)
-    e = ExponentialQueueDict{Int}()
+    e = ExponentialQueueDict{}()
     e[1000] = 10
     empty!(e)
     @test isempty(e)
