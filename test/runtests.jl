@@ -8,9 +8,10 @@ c = cumsum(a)
 
 @testset "Accumulator" begin
     @test string(Accumulator()) == "Accumulator(Float64[])"
+    @test Accumulator{Int}() == Accumulator(Int)
     @test a == v
+    @test v == a
     @test a == Accumulator(v)
-    @test Accumulator(v) == a
     @test sum(a) == sum(v)
     @test a.sums == Accumulator(v).sums
     a[3] = v[3] = 70
