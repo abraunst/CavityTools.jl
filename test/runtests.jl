@@ -79,6 +79,7 @@ end
     @test c == y
     @test all(c[i] == y[i] for i in eachindex(c))
     @test cavity(x, +, 0) |> first == y
+    @test cavity([1],+,0) == ([0], 1)
 end
 
 @testset "ExponentialQueue" begin
