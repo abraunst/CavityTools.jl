@@ -125,6 +125,8 @@ end
     e2 = ExponentialQueueDict(events)
     @test e1 == e2
     @test string(e2) == "ExponentialQueueDict([2 => 2.0, 3 => 3.0, 1 => 1.0])"
+    @test Set(keys(events)) == Set(keys(e2))
+    @test Set(values(events)) == Set(values(e2))
 end
 
 nothing
