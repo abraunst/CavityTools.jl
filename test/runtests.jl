@@ -64,9 +64,8 @@ end
 
 
 @testset "Reproducibility" begin
-    Q = ExponentialQueue(3)
-    Q[1] = 0.5; Q[2] = 0.3
-    Qcp = deepcopy(Q)
+    Q = ExponentialQueue(i=>i for i in 1:100)
+    Qcp = ExponentialQueueDict(Q)
 
     x = pop!(Q; rng = MersenneTwister(0))
     xcp = pop!(Qcp; rng = MersenneTwister(0))
@@ -86,7 +85,7 @@ end
 end
 
 @testset "ExponentialQueue" begin
-    e = ExponentialQueue([5,10],[10.0,0.0])
+    e = ExponentialQueue([5=>10.0, 10=>0.0])
     i,t = peek(e)
     @test i == 5
     @test !isempty(e)
@@ -118,7 +117,7 @@ end
     empty!(e)
     @test isempty(e)
     e1 = ExponentialQueue(3)
-    @test string(e1) == "ExponentialQueue(Int64[], Float64[])"
+    @test string(e1) == "ExponentialQueue(Pair{Int64, Float64}[])"
     events = Dict(1 => 1.0, 2 => 2.0, 3 => 3.0)
     for (k,r) in events
         e1[k] = r

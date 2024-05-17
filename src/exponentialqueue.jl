@@ -32,24 +32,27 @@ function ExponentialQueue(N::Integer)
     ExponentialQueue(acc, cumsum(acc), fill(0,N), Int[])
 end
 
-function ExponentialQueue(ridx::AbstractVector{Int}, R::AbstractVector{Float64})
-    N = maximum(ridx)
-    idx = fill(0, N)
-    ridx2 = Int[]
+function ExponentialQueue(v)
+    ridx = Int[]
     R2 = Float64[]
-    for (i,(vi,ri)) in enumerate(zip(ridx,R))
+    N = 0
+    for (i,ri) in v
+        N = max(N, i)
         if ri > 0
-            idx[vi] = i
-            push!(ridx2, vi)
+            push!(ridx, i)
             push!(R2, ri)
         end
     end
+    idx = fill(0, N)
+    for (j,i) in enumerate(ridx)
+        idx[i] = j
+    end
     acc = Accumulator(R2)
-    ExponentialQueue(acc, cumsum(acc), idx, ridx2)
+    ExponentialQueue(acc, cumsum(acc), idx, ridx)
 end
 
 function Base.show(io::IO, Q::ExponentialQueue) 
-    print(io, "ExponentialQueue(", Q.ridx, ", ", Q.acc.sums[1], ")")
+    print(io, "ExponentialQueue(", [i=>r for (i,r) in zip(Q.ridx, Q.acc.sums[1])], ")")
 end
 
 
@@ -93,9 +96,6 @@ function ExponentialQueueDict(v)
 end
 
 ExponentialQueueDict() = ExponentialQueueDict{Any}()
-
-Dict(e::AbstractExponentialQueue) = Dict(k=>e.acc[i] for (k,i) in pairs(e.idx) if !iszero(e.acc[i]))
-
 
 function Base.setindex!(e::AbstractExponentialQueue, p, i)
     if p <= 0
@@ -148,7 +148,7 @@ k,t = peek(Q): Sample next event and time from the queue.
 function Base.peek(e::AbstractExponentialQueue; rng = Random.default_rng())
     t = -log(rand(rng))/sum(e.acc)
     i = peekevent(e; rng)
-    i, t
+    i => t
 end
 
 """
@@ -165,7 +165,7 @@ k,t = pop!(Q): Sample next event and time from the queue and remove it from the 
 function Base.pop!(e::AbstractExponentialQueue; rng = Random.default_rng())
     i, t = peek(e; rng)
     delete!(e, i)
-    i, t
+    i => t
 end
 
 Base.isempty(e::AbstractExponentialQueue) = isempty(e.acc)
@@ -182,5 +182,14 @@ function Base.empty!(e::ExponentialQueueDict)
     empty!(e.acc)
 end
 
+Base.values(e::ExponentialQueueDict) = e.acc
+
+Base.keys(e::ExponentialQueueDict) = e.ridx
+
+Base.iterate(e::AbstractExponentialQueue, i = 1) = length(e.acc) < i ? nothing : ((e.ridx[i]=>e.acc[i]), i+1)
+
+Base.eltype(::AbstractExponentialQueue{T}) where T = Pair{T,Float64}
+
+Base.length(e::AbstractExponentialQueue) = length(e.acc)
 
 Base.:(==)(e1::AbstractExponentialQueue, e2::AbstractExponentialQueue) = (Dict(e1) == Dict(e2))

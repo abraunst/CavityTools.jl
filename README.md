@@ -9,8 +9,8 @@ This small package contains:
 
 * `Accumulator`: An `a = Accumulator(v::Vector)` works as a replacement for `v` with extra tracking computations.
   * Construction of `a` requires time `O(N)` where `N == length(v)`.
-  * `sum(a)`, `cumsum(a)`, `cavity(a)` all require time `O(1)`.
-  * See also: `CumSum` and `Cavity`.
+  * `sum(a)` requires time `O(1)`.
+  * `cumsum(a)`, `cavity(a)` require time `O(1)` and return respectively a `CumSum` and `Cavity` objects that are linked to `a`.
 
 * `c::CumSum(a::Accumulator)`: keeps a live-updated `cumsum` of `a`.
   * Create it with `c = cumsum(a::Accumulator)`
