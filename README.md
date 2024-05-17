@@ -26,7 +26,7 @@ This small package contains:
 * `Q::ExponentialQueueDict{K}()`: `Dict`-like interface to a collection of events with associated independent probability rates, intended for sampling on a Gillespie-like scheme.
   * Events are of type `K`.
   * Rates can be queried by `getindex` (i.e. `r = Q[k]`) and updated via `setindex!` (i.e. `Q[k] = r`). both in time `O(log N)` where `N` is the number of stored events.
-  * Next event type and time can extracted from the queue by `k,t = pop!(Q)` or `k,t=peek(Q)`. On `pop!`, event `k` is then removed from the collection. `pop!` and `peek` take time `O(log N)`.
+  * Next event type and time can extracted from the queue by `k,t = pop!(Q)` or `k,t = peek(Q)`. On `pop!`, event `k` is then removed from the collection. `pop!` and `peek` take time `O(log N)`.
   * If event time is unneeded, next event alone can be extracted with `k = peekevent(Q)` (taking also time `O(log N)`).
 
 * `Q::ExponentialQueue(N::Integer)`: Like `ExponentialQueue{Int}` but events are stored on a vector instead of a `Dict`, so it is slightly more efficient. Event indices are in `1:N`.
