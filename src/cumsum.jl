@@ -32,13 +32,18 @@ julia> c[end]
 154
 ```
 """
-struct CumSum{T,op,init}
+struct CumSum{T,op,init} <: AbstractVector{T}
     acc::Accumulator{T,op,init}
 end
 
-Base.cumsum(a::Accumulator) = CumSum(a)
+function Base.cumsum(a::Accumulator)
+    Base.require_one_based_indexing(a)
+    CumSum(a)
+end
+
+Base.size(c::CumSum) = size(c.acc)
 Base.length(c::CumSum) = length(c.acc)
-Base.firstindex(c::CumSum) = 1
+Base.firstindex(c::CumSum) = firstindex(c.acc)
 Base.lastindex(c::CumSum) = lastindex(c.acc)
 Base.keys(c::CumSum) = keys(c.acc)
 Base.diff(c::CumSum) = @view c.acc[2:end]
