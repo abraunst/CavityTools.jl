@@ -7,7 +7,7 @@ This small package contains:
 * `cavity!` and `cavity`: Functions to compute the `N` all-but-one operations between `N` elements in time `O(N)`. The operation is arbitrary and needs only to be associative. This is equivalent to computing `[reduce(op, (src[j] for j in eachindex(src) if i != j); init) for i in eachindex(src)]` which however would need `N*(N-1)` evaluations of `op`.
   If `op` is commutative with exact inverse `invop`, you could obtain the same result of `cavity(src, op, init)`, also in time `O(N)`, with `invop.(reduce(op, src; init), src)`.
 
-* `Accumulator`: An `a = Accumulator(v::Vector)` works as a replacement for `v` with extra tracking computations.
+* `Accumulator`: An `a = Accumulator(v::AbstractVector)` works as a replacement for `v` with extra tracking computations.
   * Construction of `a` requires time `O(N)` where `N == length(v)`.
   * `sum(a)` requires time `O(1)`.
   * `cumsum(a)`, `cavity(a)` require time `O(1)` and return respectively a `CumSum` and `Cavity` objects that are linked to `a`.

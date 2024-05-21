@@ -1,5 +1,5 @@
 """
-An `a = Accumulator(v::Vector; op=+, init=zero)` works as a replacement for `v`
+An `a = Accumulator(v::AbstractVector; op=+, init=zero)` works as a replacement for `v`
 with extra tracking computation, such as `sum`. See also `CumSum` and `Cavity`
 
 ```
