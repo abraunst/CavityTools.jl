@@ -1,5 +1,5 @@
 
-abstract type AbstractExponentialQueue{T} end
+abstract type AbstractExponentialQueue{T} <: AbstractDict{T, Float64} end
 
 struct ExponentialQueue <: AbstractExponentialQueue{Int}
     acc::Accumulator{Float64,+,zero}
