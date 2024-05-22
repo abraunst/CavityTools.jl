@@ -27,9 +27,9 @@ julia> i,t = pop!(Q) # gets time and id of next event and remove it from the que
 
 See also: `ExponentialQueueDict`
 """
-function ExponentialQueue(N::Integer)
+function ExponentialQueue()
     acc = Accumulator()
-    ExponentialQueue(acc, cumsum(acc), fill(0,N), Int[])
+    ExponentialQueue(acc, cumsum(acc), Int[], Int[])
 end
 
 function ExponentialQueue(v)
@@ -50,6 +50,8 @@ function ExponentialQueue(v)
     acc = Accumulator(R2)
     ExponentialQueue(acc, cumsum(acc), idx, ridx)
 end
+
+@deprecate ExponentialQueue(N::Integer) ExponentialQueue()
 
 function Base.show(io::IO, Q::ExponentialQueue) 
     print(io, "ExponentialQueue(", [i=>r for (i,r) in zip(Q.ridx, Q.acc.sums[1])], ")")
@@ -97,6 +99,17 @@ end
 
 ExponentialQueueDict() = ExponentialQueueDict{Any}()
 
+function _addidx(e::ExponentialQueue, i)
+    i <= 0 && throw(BoundsError(e, i))
+    i > length(e.idx) && append!(e.idx, fill(0, i - length(e.idx)))
+    e.idx[i] = length(e.acc)    
+end 
+
+function _addidx(e::ExponentialQueueDict, i)
+    e.idx[i] = length(e.acc)    
+end 
+
+
 function Base.setindex!(e::AbstractExponentialQueue, p, i)
     if p <= 0
         # do not store null rates
@@ -108,13 +121,13 @@ function Base.setindex!(e::AbstractExponentialQueue, p, i)
         e.acc[e.idx[i]] = p
     else
         push!(e.acc, p)
-        e.idx[i] = length(e.acc)
+        _addidx(e, i)
         push!(e.ridx, i)
     end
     p
 end
 
-Base.haskey(e::ExponentialQueue, i) = !iszero(e.idx[i])
+Base.haskey(e::ExponentialQueue, i) = i ∈ eachindex(e.idx) && !iszero(e.idx[i])
 
 Base.haskey(e::ExponentialQueueDict, i) = haskey(e.idx, i)
 

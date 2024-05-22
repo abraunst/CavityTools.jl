@@ -29,4 +29,4 @@ This small package contains:
   * Next event type and time can extracted from the queue by `k,t = pop!(Q)` or `k,t = peek(Q)`. On `pop!`, event `k` is then removed from the collection. `pop!` and `peek` take time `O(log N)`.
   * If event time is unneeded, next event alone can be extracted with `k = peekevent(Q)` (taking also time `O(log N)`).
 
-* `Q::ExponentialQueue(N::Integer)`: Like `ExponentialQueue{Int}` but events are stored on a vector instead of a `Dict`, so it is slightly more efficient. Event indices are in `1:N`.
+* `Q::ExponentialQueue()`: Like `ExponentialQueue{Int}` but events are stored on a vector instead of a `Dict`, so it is slightly more efficient. Event indices are positive integers (note that the memory space needed scales with the maximum index, so use ExponentialQueueDIct{Int} if you need very large indices).
