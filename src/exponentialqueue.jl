@@ -1,5 +1,5 @@
 
-abstract type AbstractExponentialQueue{T} end
+abstract type AbstractExponentialQueue{T} <: AbstractDict{T, Float64} end
 
 struct ExponentialQueue <: AbstractExponentialQueue{Int}
     acc::Accumulator{Float64,+,zero}
@@ -10,10 +10,10 @@ end
 
 
 """
-`ExponentialQueue(N)` keeps an updatable queue of up to `N` events with ids `1...N` and contant rates Q[1] ... Q[N]. 
+`ExponentialQueue()` keeps an updatable queue of up to `N` events with ids `1...N` and contant rates Q[1] ... Q[N]. 
 This is intended for sampling in continuous time.
 
-julia> Q = ExponentialQueue(100)
+julia> Q = ExponentialQueue()
 ExponentialQueue(Accumulator{Float64, +, zero}([Float64[]]), [0, 0, 0, 0, 0, 0, 0, 0, 0, 0  …  0, 0, 0, 0, 0, 0, 0, 0, 0, 0], Int64[])
 
 julia> Q[1] = 1.2 #updates rate of event 1
@@ -27,12 +27,7 @@ julia> i,t = pop!(Q) # gets time and id of next event and remove it from the que
 
 See also: `ExponentialQueueDict`
 """
-function ExponentialQueue(N::Integer)
-    acc = Accumulator()
-    ExponentialQueue(acc, cumsum(acc), fill(0,N), Int[])
-end
-
-function ExponentialQueue(v)
+function ExponentialQueue(v = [])
     ridx = Int[]
     R2 = Float64[]
     N = 0
@@ -50,6 +45,8 @@ function ExponentialQueue(v)
     acc = Accumulator(R2)
     ExponentialQueue(acc, cumsum(acc), idx, ridx)
 end
+
+@deprecate ExponentialQueue(N::Integer) ExponentialQueue()
 
 function Base.show(io::IO, Q::ExponentialQueue) 
     print(io, "ExponentialQueue(", [i=>r for (i,r) in zip(Q.ridx, Q.acc.sums[1])], ")")
@@ -97,6 +94,17 @@ end
 
 ExponentialQueueDict() = ExponentialQueueDict{Any}()
 
+function _addidx(e::ExponentialQueue, i)
+    i <= 0 && throw(BoundsError(e, i))
+    i > length(e.idx) && append!(e.idx, fill(0, i - length(e.idx)))
+    e.idx[i] = length(e.acc)    
+end 
+
+function _addidx(e::ExponentialQueueDict, i)
+    e.idx[i] = length(e.acc)    
+end 
+
+
 function Base.setindex!(e::AbstractExponentialQueue, p, i)
     if p <= 0
         # do not store null rates
@@ -108,13 +116,13 @@ function Base.setindex!(e::AbstractExponentialQueue, p, i)
         e.acc[e.idx[i]] = p
     else
         push!(e.acc, p)
-        e.idx[i] = length(e.acc)
+        _addidx(e, i)
         push!(e.ridx, i)
     end
     p
 end
 
-Base.haskey(e::ExponentialQueue, i) = !iszero(e.idx[i])
+Base.haskey(e::ExponentialQueue, i) = i ∈ eachindex(e.idx) && !iszero(e.idx[i])
 
 Base.haskey(e::ExponentialQueueDict, i) = haskey(e.idx, i)
 

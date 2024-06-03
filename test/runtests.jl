@@ -116,7 +116,7 @@ end
     e[1000] = 10
     empty!(e)
     @test isempty(e)
-    e1 = ExponentialQueue(3)
+    e1 = ExponentialQueue()
     @test string(e1) == "ExponentialQueue(Pair{Int64, Float64}[])"
     events = Dict(1 => 1.0, 2 => 2.0, 3 => 3.0)
     for (k,r) in events
