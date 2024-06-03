@@ -129,26 +129,20 @@ Base.haskey(e::ExponentialQueueDict, i) = haskey(e.idx, i)
 Base.getindex(e::AbstractExponentialQueue, i) = haskey(e, i) ? e.acc[e.idx[i]] : 0.0
 
 
+_deleteidx!(e::ExponentialQueueDict, i) = delete!(e.idx, i)
 
-function _delete!(e::AbstractExponentialQueue, i)
+_deleteidx!(e::ExponentialQueue, i) = (e.idx[i] = 0)
+
+function Base.delete!(e::AbstractExponentialQueue, i)
     l, k = e.idx[i], e.ridx[length(e.acc)]
     e.acc[l] = e.acc.sums[1][end]
     e.idx[k], e.ridx[l] = l, k
     pop!(e.acc)
     pop!(e.ridx)
-end
-
-function Base.delete!(e::ExponentialQueueDict, i)
-    _delete!(e, i)
-    delete!(e.idx, i)
+    _deleteidx!(e, i)
     e
 end
 
-function Base.delete!(e::ExponentialQueue, i)
-    _delete!(e, i)
-    e.idx[i] = 0
-    e
-end
 
 """
 k,t = peek(Q): Sample next event and time from the queue.
