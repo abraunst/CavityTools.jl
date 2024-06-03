@@ -10,10 +10,10 @@ end
 
 
 """
-`ExponentialQueue(N)` keeps an updatable queue of up to `N` events with ids `1...N` and contant rates Q[1] ... Q[N]. 
+`ExponentialQueue()` keeps an updatable queue of up to `N` events with ids `1...N` and contant rates Q[1] ... Q[N]. 
 This is intended for sampling in continuous time.
 
-julia> Q = ExponentialQueue(100)
+julia> Q = ExponentialQueue()
 ExponentialQueue(Accumulator{Float64, +, zero}([Float64[]]), [0, 0, 0, 0, 0, 0, 0, 0, 0, 0  …  0, 0, 0, 0, 0, 0, 0, 0, 0, 0], Int64[])
 
 julia> Q[1] = 1.2 #updates rate of event 1
@@ -27,12 +27,7 @@ julia> i,t = pop!(Q) # gets time and id of next event and remove it from the que
 
 See also: `ExponentialQueueDict`
 """
-function ExponentialQueue()
-    acc = Accumulator()
-    ExponentialQueue(acc, cumsum(acc), Int[], Int[])
-end
-
-function ExponentialQueue(v)
+function ExponentialQueue(v = [])
     ridx = Int[]
     R2 = Float64[]
     N = 0
