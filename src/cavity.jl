@@ -42,9 +42,9 @@ function _accumulate!(op, dest, source)
     v1 = first(source)
     dest[begin] = v1
     cur_val = v1
-    @inbounds for (i, di) in Iterators.drop(pairs(source), 1)
+    @inbounds for (i, di) in Iterators.drop(enumerate(source), 1)
         cur_val = op(cur_val, di)
-        dest[i] = cur_val
+        dest[begin+i-1] = cur_val
     end
     return dest
 end
