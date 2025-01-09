@@ -84,6 +84,13 @@ end
     @test cavity([1],+,0) == ([0], 1)
 end
 
+@testset "cavity with iterator" begin
+    r = rand(1:10^4,10^4+11)
+    source_itr = (sqrt(x) for x in r)
+    source_vec = collect(source_itr)
+    @test cavity(source_itr, +, 0.0) == cavity(source_vec, +, 0.0)
+end
+
 @testset "ExponentialQueue" begin
     e = ExponentialQueue([5=>10.0, 10=>0.0])
     i,t = peek(e)
