@@ -40,7 +40,7 @@ end
 function _accumulate!(op, dest, source)
     isempty(source) && return dest
     v1 = first(source)
-    dest[begin] = v1
+    @inbounds dest[begin] = v1
     cur_val = v1
     @inbounds for (i, di) in Iterators.drop(enumerate(source), 1)
         cur_val = op(cur_val, di)
