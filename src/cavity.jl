@@ -36,18 +36,6 @@ end
     op(first(L), first(R)), (i + 1, L, R)
 end
 
-"A homemade version of `Base.accumulate!` that accepts an iterator as `source`"
-function _accumulate!(op, dest, source)
-    isempty(source) && return dest
-    v1 = first(source)
-    @inbounds dest[begin] = v1
-    cur_val = v1
-    @inbounds for (i, di) in Iterators.drop(enumerate(source), 1)
-        cur_val = op(cur_val, di)
-        dest[begin+i-1] = cur_val
-    end
-    return dest
-end
 
 function cavity!(dest, source, op, init)
     @assert length(dest) == length(source)
@@ -56,7 +44,7 @@ function cavity!(dest, source, op, init)
         @inbounds dest[begin] = init
         return op(first(source), init)
     end
-    _accumulate!(op, dest, source)
+    copyto!(dest, Iterators.accumulate(op, source))
     full = op(dest[end], init)
     right = init
     for (i,s)=zip(lastindex(dest):-1:firstindex(dest)+1,Iterators.reverse(source))
