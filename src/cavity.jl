@@ -36,6 +36,7 @@ end
     op(first(L), first(R)), (i + 1, L, R)
 end
 
+
 function cavity!(dest, source, op, init)
     @assert length(dest) == length(source)
     isempty(source) && return init
@@ -43,7 +44,7 @@ function cavity!(dest, source, op, init)
         @inbounds dest[begin] = init
         return op(first(source), init)
     end
-    accumulate!(op, dest, source)
+    copyto!(dest, Iterators.accumulate(op, source))
     full = op(dest[end], init)
     right = init
     for (i,s)=zip(lastindex(dest):-1:firstindex(dest)+1,Iterators.reverse(source))
