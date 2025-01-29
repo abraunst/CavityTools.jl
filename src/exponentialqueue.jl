@@ -1,7 +1,7 @@
 
-abstract type AbstractExponentialQueue{T} <: AbstractDict{T, Float64} end
+abstract type AbstractExponentialQueue{T,F} <: AbstractDict{T, F} end
 
-struct ExponentialQueue <: AbstractExponentialQueue{Int}
+struct ExponentialQueue <: AbstractExponentialQueue{Int,Float64}
     acc::Accumulator{Float64,+,zero}
     sum::CumSum{Float64,+,zero}
     idx::Vector{Int}
@@ -71,19 +71,19 @@ julia> i,t = pop!(Q) # gets time and id of next event and remove it from the que
 
 See also: `ExponentialQueue` for a slightly more efficient queue for the case `K == Int`
 """
-struct ExponentialQueueDict{K} <: AbstractExponentialQueue{K}
-    acc::Accumulator{Float64,+,zero}
-    sum::CumSum{Float64,+,zero}
+struct ExponentialQueueDict{K,F} <: AbstractExponentialQueue{K,F}
+    acc::Accumulator{F,+,zero}
+    sum::CumSum{F,+,zero}
     idx::Dict{K,Int}
     ridx::Vector{K}
 end
 
-function Base.show(io::IO, Q::ExponentialQueueDict{K}) where K
-    print(io, "ExponentialQueueDict(", Pair{K,Float64}[i=>Q.acc[Q.idx[i]] for i in eachindex(Q.idx)], ")")
+function Base.show(io::IO, Q::ExponentialQueueDict{K,F}) where {K,F}
+    print(io, "ExponentialQueueDict(", Pair{K,F}[i=>Q.acc[Q.idx[i]] for i in eachindex(Q.idx)], ")")
 end
 
-function ExponentialQueueDict{K}() where K
-    acc = Accumulator()
+function ExponentialQueueDict{K,F}() where {K,F<:Real}
+    acc = Accumulator{F}()
     ExponentialQueueDict(acc, cumsum(acc), Dict{K,Int}(), K[])
 end
 
@@ -92,17 +92,17 @@ function ExponentialQueueDict(v)
     ExponentialQueueDict(acc, cumsum(acc), Dict(k=>i for (i,(k,_)) in enumerate(v)), [i for (i,_) in v])
 end
 
-ExponentialQueueDict() = ExponentialQueueDict{Any}()
+ExponentialQueueDict() = ExponentialQueueDict{Any,Float64}()
 
 function _addidx(e::ExponentialQueue, i)
     i <= 0 && throw(BoundsError(e, i))
     i > length(e.idx) && append!(e.idx, fill(0, i - length(e.idx)))
-    e.idx[i] = length(e.acc)    
-end 
+    e.idx[i] = length(e.acc)
+end
 
 function _addidx(e::ExponentialQueueDict, i)
-    e.idx[i] = length(e.acc)    
-end 
+    e.idx[i] = length(e.acc)
+end
 
 
 function Base.setindex!(e::AbstractExponentialQueue, p, i)
