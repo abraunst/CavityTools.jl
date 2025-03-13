@@ -22,12 +22,4 @@ This small package contains:
   * Create it with `c = cavity(a::Accumulator)`.
   * Retrieval `c[i]` takes time `O(log N)`.
   * `collect(c)` takes time `O(N)` (but is slower than `cavity(v::Vector)`).
-
-* `Q::ExponentialQueueDict{K}()`: `Dict`-like interface to a collection of events with associated independent probability rates, intended for sampling on a Gillespie-like scheme.
-  * Events are of type `K`.
-  * Dict-like contruction `Q = ExponentialQueueDict([:a => 0.1, :b => 0.2, :c => 0.3])` is allowed 
-  * Rates can be queried by `getindex` (i.e. `r = Q[k]`) and updated via `setindex!` (i.e. `Q[k] = r`), both in time `O(log N)` where `N` is the number of stored events.
-  * Next event type and time can extracted from the queue by `k,t = pop!(Q)` or `k,t = peek(Q)`. On `pop!`, event `k` is then removed from the collection. `pop!` and `peek` take time `O(log N)`.
-  * If event time is unneeded, next event alone can be extracted with `k = peekevent(Q)` (taking also time `O(log N)`).
-
-* `Q::ExponentialQueue()`: Like `ExponentialQueue{Int}` but events are stored on a vector instead of a `Dict`, so it may be slightly more efficient. Event indices are positive integers (note that the memory space needed scales with the maximum index, so use ExponentialQueueDIct{Int} if you need very large indices).
+  

@@ -58,7 +58,7 @@ function Base.push!(a::Accumulator{T,op,init}, v) where {T, op, init}
         x >>= 1
     end
     if length(a.sums[end]) == 2
-        push!(a.sums, [op(a.sums[end][1], a.sums[end][2])])
+        push!(a.sums, [op(a.sums[end][1][], a.sums[end][2][])])
     end
 end
 
@@ -73,6 +73,7 @@ function Base.pop!(a::Accumulator{T,op,init}) where {T, op, init}
 end
 
 function Base.setindex!(a::Accumulator{T,op,init},v,i::Integer) where {T,op,init}
+    v == a[i] && return v
     x = i - 1
     r = promote_type(typeof(v), T)(v)
     for s in a.sums
@@ -84,6 +85,7 @@ function Base.setindex!(a::Accumulator{T,op,init},v,i::Integer) where {T,op,init
         end
         x >>= 1
     end
+    v
 end
 
 Base.:(==)(a::Accumulator, b::Accumulator) = first(a.sums) == first(b.sums)
