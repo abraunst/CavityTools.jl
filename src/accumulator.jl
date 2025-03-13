@@ -58,7 +58,7 @@ function Base.push!(a::Accumulator{T,op,init}, v) where {T, op, init}
         x >>= 1
     end
     if length(a.sums[end]) == 2
-        push!(a.sums, [op(a.sums[end][1][], a.sums[end][2][])])
+        push!(a.sums, [op(a.sums[end][1], a.sums[end][2])])
     end
 end
 
