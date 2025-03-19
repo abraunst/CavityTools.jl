@@ -76,7 +76,7 @@ function Base.setindex!(a::Accumulator{T,op,init},v,i::Integer) where {T,op,init
     v == a[i] && return v
     x = i - 1
     r = promote_type(typeof(v), T)(v)
-    for s in a.sums
+    @inbounds for s in a.sums
         s[x + 1] = r
         left = (x & 1 == 0)
         x ⊻= 1
