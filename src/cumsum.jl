@@ -75,7 +75,7 @@ function Base.searchsortedfirst(c::CumSum{T,op,init}, r; lt = isless, rev = fals
     for k in length(a.sums):-1:1
         s = a.sums[k]
         x + 1 > length(s) && return length(a) + 1
-        n = op(s[x + 1], m)
+        @inbounds n = op(s[x + 1], m)
         if xor(rev, lt(n, r))
             m = n
             x ⊻= 1
