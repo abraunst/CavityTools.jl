@@ -92,7 +92,7 @@ Base.:(==)(a::Accumulator, b::Accumulator) = first(a.sums) == first(b.sums)
 
 Base.getindex(a::Accumulator, i) = first(a.sums)[i]
 
-Base.sum(a::Accumulator{T,+,zero}) where T = only(last(a.sums))
+Base.sum(a::Accumulator{T,+,zero}) where T = isempty(a) ? zero(T) : only(last(a.sums))
 
 Base.reduce(a::Accumulator{T,op,init}) where {T,op,init} = only(last(a.sums))
 
