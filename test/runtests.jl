@@ -82,4 +82,7 @@ end
     @test cavity(source_itr, +, 0.0) == cavity(source_vec, +, 0.0)
 end
 
+@testset "empty accumulator" begin
+    @test 0 == sum(Accumulator(Int[0]))
+end
 nothing
